@@ -5,7 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.mzl0101.tree.entity.SysTreeNode;
 import com.mzl0101.tree.service.ISysTreeNodeService;
 import com.mzl0101.util.JwtUtil;
-import com.mzl0101.util.TreeNodeUtil;
+import com.mzl0101.util.TreeNodeUtils2;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,8 +45,8 @@ public class SysTreeNodeController {
         List<SysTreeNode> list = treeNodeService.findAll();
         logger.info("---------tuList size is "+list.size()+"--------------------");
         //TreeNodeUtil tuu = new TreeNodeUtil(list);
-        TreeNodeUtil treeNodeUti = new TreeNodeUtil(list);
-        SysTreeNode tn = treeNodeUti.generateTreeNode(root);
+        TreeNodeUtils2 treeNodeUti = new TreeNodeUtils2(list);
+        SysTreeNode tn = treeNodeUti.generateTreePo(root);
         return tn;
     }
 

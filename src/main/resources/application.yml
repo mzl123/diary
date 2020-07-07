@@ -1,9 +1,6 @@
 jasypt:
     encryptor:
         password: 111111
-#mybatis:
-#    mapper-locations: classpath:/com/mzl0101/diary/*.xml
-#    typeAliasesPackage: com.mzl0101.entity
 spring:
     aop:
         auto: true
@@ -16,7 +13,6 @@ spring:
         maxWait: 60000
         minEvictableIdleTimeMillis: 300000
         minIdle: 5
-        password: 123456
         testOnBorrow: false
         testOnReturn: false
         testWhileIdle: true
@@ -24,6 +20,7 @@ spring:
         type: com.alibaba.druid.pool.DruidDataSource
         url: jdbc:mysql://127.0.0.1:3306/diary?useUnicode=true&characterEncoding=gbk&zeroDateTimeBehavior=convertToNull&useSSL=false
         username: root
+        password: 123456
         validationQuery: SELECT 1 FROM DUAL
     redis:
         database: 0
@@ -36,15 +33,6 @@ spring:
             min-idle: 0
         port: 6379
         timeout: 0
-#logging:
-#  level:
-#    root: warn
-#    com.mzl0101.dao: trace
-#  pattern:
-#    console: %d{yyyy/MM/dd-HH:mm:ss} [%thread] %-5level %logger- %msg%n
-#    file: %d{yyyy/MM/dd-HH:mm} [%thread] %-5level %logger- %msg%n
-#  file: springboot.log
-  #path: D://dev
 # mybatis-plus相关配置
 mybatis-plus:
     # xml扫描，多个目录用逗号或者分号分隔（告诉 Mapper 所对应的 XML 文件位置）
