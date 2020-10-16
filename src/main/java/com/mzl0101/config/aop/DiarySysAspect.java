@@ -50,7 +50,7 @@ public class DiarySysAspect {
         LOG.info("===总共耗时(秒计算)： " +Duration.between(inst1, inst2).getSeconds()+ "===\n");
     }
 
-    @Pointcut("execution(* com.mzl0101.diary.controller..*.*(..))")
+    @Pointcut("execution(* com.mzl0101.tree.controller..*.*(..))")
     private void controllerPointCut() {
     }
 }

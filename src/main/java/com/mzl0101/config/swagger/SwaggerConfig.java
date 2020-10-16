@@ -20,20 +20,20 @@ public class SwaggerConfig {
     @Bean
     public Docket createRestApi() {
         //添加header参数
-        ParameterBuilder ticketPar = new ParameterBuilder();
+       /* ParameterBuilder ticketPar = new ParameterBuilder();
         List<Parameter> pars = new ArrayList<>();
         ticketPar.name("token").description("user token")
                 .modelRef(new ModelRef("string")).parameterType("header")
                 .required(false).build(); //header中的ticket参数非必填，传空也可以
-        pars.add(ticketPar.build());    //根据每个方法名也知道当前方法在设置什么参数
+        pars.add(ticketPar.build());    //根据每个方法名也知道当前方法在设置什么参数*/
 
         return new Docket(DocumentationType.SWAGGER_2)
                 .apiInfo(apiInfo())
                 .select()
                 .apis(RequestHandlerSelectors.basePackage("com.mzl0101"))
                 .paths(PathSelectors.any())
-                .build()
-                .globalOperationParameters(pars);
+                .build();
+                //.globalOperationParameters(pars);
     }
 
     private ApiInfo apiInfo() {
