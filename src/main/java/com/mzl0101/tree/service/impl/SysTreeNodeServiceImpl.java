@@ -29,20 +29,20 @@ public class SysTreeNodeServiceImpl extends ServiceImpl<SysTreeNodeMapper, SysTr
     public List<SysTreeNode> findAll() {
         List<SysTreeNode> treeNodeList = new ArrayList<>();
         // 查询redis
-        List<Object> treeNode = redisClient.lGet("treeNodeList", 0, -1);
-        if (treeNode != null && treeNode.size()>0) {
-            for (Object obj : treeNode)
-            {
-                SysTreeNode temp = (SysTreeNode) obj;
-                treeNodeList.add(temp);
-            }
-            return treeNodeList;
-        }
-        else {
+        Object treeNode = redisClient.get("treeNode");
+        if (treeNode == null)
+        {
             // 查询mysql数据库
             QueryWrapper<SysTreeNode> queryWrapper = new QueryWrapper<>();
             treeNodeList =sysTreeNodeMapper.selectList(queryWrapper);
-            redisClient.lSet("treeNodeList", treeNodeList,60);
+            redisClient.set("treeNode", treeNodeList);
+            redisClient.expire("treeNode", 60);
+            logger.info("没有缓存走数据库-----------");
+        }
+        else
+        {
+            treeNodeList = (List<SysTreeNode>) treeNode;
+            logger.info("有缓存------------");
         }
         return treeNodeList;
     }
