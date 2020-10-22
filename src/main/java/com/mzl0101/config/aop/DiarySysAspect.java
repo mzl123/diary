@@ -20,7 +20,6 @@ public class DiarySysAspect {
     private static final Logger LOG =  LoggerFactory.getLogger(DiarySysAspect.class);
     public static final String format = "yyyy-MM-dd HH:mm:ss";
 
-
     private String startTime;
     private String endTime;
     private Instant inst1;
