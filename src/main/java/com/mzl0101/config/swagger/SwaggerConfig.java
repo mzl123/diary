@@ -1,5 +1,6 @@
 package com.mzl0101.config.swagger;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import springfox.documentation.builders.ApiInfoBuilder;
@@ -17,6 +18,8 @@ import java.util.List;
 
 @Configuration
 public class SwaggerConfig {
+    @Value("${swagger.enabled}")
+    private Boolean enabled;
     @Bean
     public Docket createRestApi() {
         //添加header参数
@@ -28,6 +31,7 @@ public class SwaggerConfig {
         pars.add(ticketPar.build());    //根据每个方法名也知道当前方法在设置什么参数*/
 
         return new Docket(DocumentationType.SWAGGER_2)
+                .enable(enabled)
                 .apiInfo(apiInfo())
                 .select()
                 .apis(RequestHandlerSelectors.basePackage("com.mzl0101"))
@@ -40,7 +44,7 @@ public class SwaggerConfig {
         return new ApiInfoBuilder()
                 .title("springboot利用swagger构建api文档")
                 .description("简单优雅的restfun风格")
-                .termsOfServiceUrl("http://mzl0101.com")
+                .termsOfServiceUrl("https://mzl0101.com")
                 .version("1.0")
                 .build();
     }
