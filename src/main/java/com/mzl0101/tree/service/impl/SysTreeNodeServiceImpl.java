@@ -6,9 +6,11 @@ import com.mzl0101.tree.entity.SysTreeNode;
 import com.mzl0101.tree.mapper.SysTreeNodeMapper;
 import com.mzl0101.tree.service.ISysTreeNodeService;
 import com.mzl0101.util.RedisClient;
+import com.mzl0101.util.TreeNodeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -24,27 +26,30 @@ public class SysTreeNodeServiceImpl extends ServiceImpl<SysTreeNodeMapper, SysTr
     @Autowired
     private SysTreeNodeMapper sysTreeNodeMapper;
     @Autowired
-    RedisClient redisClient;
+    private RedisClient redisClient;
     @Override
-    public List<SysTreeNode> findAll() {
-        List<SysTreeNode> treeNodeList = new ArrayList<>();
+    public SysTreeNode findAll() {
+        SysTreeNode sysTreeNode = null;
         // 查询redis
         Object treeNode = redisClient.get("treeNode");
+        //
         if (treeNode == null)
         {
             // 查询mysql数据库
             QueryWrapper<SysTreeNode> queryWrapper = new QueryWrapper<>();
-            treeNodeList =sysTreeNodeMapper.selectList(queryWrapper);
-            redisClient.set("treeNode", treeNodeList);
+            List<SysTreeNode> treeNodeList =sysTreeNodeMapper.selectList(queryWrapper);
+            TreeNodeUtil treeNodeUti = new TreeNodeUtil(treeNodeList);
+            sysTreeNode = treeNodeUti.generateTreePo(-1l);
+            redisClient.set("treeNode", sysTreeNode);
             redisClient.expire("treeNode", 60);
             logger.info("没有缓存走数据库-----------");
         }
         else
         {
-            treeNodeList = (List<SysTreeNode>) treeNode;
+            sysTreeNode = (SysTreeNode) treeNode;
             logger.info("有缓存------------");
         }
-        return treeNodeList;
+        return sysTreeNode;
     }
 
 }

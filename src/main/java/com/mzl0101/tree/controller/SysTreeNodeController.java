@@ -27,11 +27,8 @@ public class SysTreeNodeController {
 
     @ApiOperation(value = "树查询测试" ,  notes="树查询测试")
     @RequestMapping(value="/find",method= RequestMethod.GET)
-    public SysTreeNode getTreeUserAll(@RequestParam("root") Long root) {
-        List<SysTreeNode> list = treeNodeService.findAll();
-        TreeNodeUtil treeNodeUti = new TreeNodeUtil(list);
-        SysTreeNode tn = treeNodeUti.generateTreePo(root);
-        return tn;
+    public SysTreeNode getTreeUserAll() {
+        return treeNodeService.findAll();
     }
 
 

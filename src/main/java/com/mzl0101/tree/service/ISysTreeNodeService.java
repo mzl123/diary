@@ -14,5 +14,5 @@ import java.util.List;
  * @since 2020-06-24
  */
 public interface ISysTreeNodeService extends IService<SysTreeNode> {
-    List<SysTreeNode> findAll();
+    SysTreeNode findAll();
 }
