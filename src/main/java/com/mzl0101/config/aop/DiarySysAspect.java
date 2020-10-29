@@ -17,7 +17,7 @@ import java.util.Calendar;
 @Aspect
 @Component
 public class DiarySysAspect {
-    private static final Logger LOG =  LoggerFactory.getLogger(DiarySysAspect.class);
+    private static final Logger logger =  LoggerFactory.getLogger(DiarySysAspect.class);
     public static final String format = "yyyy-MM-dd HH:mm:ss";
 
     private String startTime;
@@ -27,13 +27,10 @@ public class DiarySysAspect {
 
     @Before(value = "controllerPointCut()")
     public void doBefore(JoinPoint joinPoint) {
-
         inst1 = Instant.now();//当前的时间
-
         Calendar calStart = Calendar.getInstance();
-
         startTime = new SimpleDateFormat(format).format(calStart.getTime());
-        LOG.info("===" + startTime + " 开始 请求  " + joinPoint.getSignature().getDeclaringTypeName() + "."
+        logger.info("===" + startTime + " 开始 请求  " + joinPoint.getSignature().getDeclaringTypeName() + "."
                 + joinPoint.getSignature().getName() + "===\n");
     }
 
@@ -42,14 +39,12 @@ public class DiarySysAspect {
         inst2 = Instant.now();//当前的时间
         Calendar calEnd = Calendar.getInstance();
         endTime = new SimpleDateFormat(format).format(calEnd.getTime());
-        LOG.info("===" + endTime + " 请求   "  + joinPoint.getSignature().getDeclaringTypeName() + "."
+        logger.info("===" + endTime + " 请求   "  + joinPoint.getSignature().getDeclaringTypeName() + "."
                 + joinPoint.getSignature().getName() + " 结束  === \n");
-        LOG.info("===总共耗时(毫秒计算)： " + Duration.between(inst1, inst2).toMillis()+ "===\n");
-
-        LOG.info("===总共耗时(秒计算)： " +Duration.between(inst1, inst2).getSeconds()+ "===\n");
+        logger.info("===总共耗时： " + Duration.between(inst1, inst2).toMillis()+ "(毫秒)，"+Duration.between(inst1, inst2).getSeconds()+"(秒)===\n");
     }
 
-    @Pointcut("execution(* com.mzl0101.tree.controller..*.*(..))")
+    @Pointcut("execution(* com.mzl0101.*.controller..*.*(..))")
     private void controllerPointCut() {
     }
 }

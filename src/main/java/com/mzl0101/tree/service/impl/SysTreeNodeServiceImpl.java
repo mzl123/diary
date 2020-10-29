@@ -32,7 +32,6 @@ public class SysTreeNodeServiceImpl extends ServiceImpl<SysTreeNodeMapper, SysTr
         SysTreeNode sysTreeNode = null;
         // 查询redis
         Object treeNode = redisClient.get("treeNode");
-        //
         if (treeNode == null)
         {
             // 查询mysql数据库
@@ -42,12 +41,10 @@ public class SysTreeNodeServiceImpl extends ServiceImpl<SysTreeNodeMapper, SysTr
             sysTreeNode = treeNodeUti.generateTreePo(-1l);
             redisClient.set("treeNode", sysTreeNode);
             redisClient.expire("treeNode", 60);
-            logger.info("没有缓存走数据库-----------");
         }
         else
         {
             sysTreeNode = (SysTreeNode) treeNode;
-            logger.info("有缓存------------");
         }
         return sysTreeNode;
     }
