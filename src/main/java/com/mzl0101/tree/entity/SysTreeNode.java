@@ -26,15 +26,12 @@ import java.util.List;
 @TableName("sys_tree_node")
 public class SysTreeNode implements Serializable {
 
-    private static final long serialVersionUID = 1L;
 
+    private static final long serialVersionUID = -6697850896827777852L;
     @TableId(value = "node_id", type = IdType.AUTO)
     private Long nodeId;
-
     private String nodeName;
-
     private Long nodeParentId;
-
     @TableField(exist = false)
     private List<SysTreeNode> nodes = new ArrayList<SysTreeNode>();
 
