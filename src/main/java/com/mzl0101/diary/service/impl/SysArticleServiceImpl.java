@@ -15,4 +15,17 @@ public class SysArticleServiceImpl extends ServiceImpl<SysArticleMapper, SysArti
 
     @Autowired
     private SysArticleMapper sysArticleMapper;
+
+    @Override
+    public void deploy(){
+        //1.读取文件
+        //1.1 根据目录读取markdown文件
+        //readMarkdownFiles();
+        //1.2 根据目录读取图片文件
+        //readImageFiles();
+        //2.保存数据
+
+        //3.创建文件
+        //4.生成静态文件
+    }
 }
