@@ -1,9 +1,7 @@
-package com.mzl0101.tree.controller;
+package com.mzl0101.diary.controller;
 
 
-import com.mzl0101.tree.entity.SysTreeNode;
-import com.mzl0101.tree.service.ISysTreeNodeService;
-import com.mzl0101.util.TreeNodeUtil;
+import com.mzl0101.diary.service.ISysNodeService;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,10 +13,10 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/tree")
-public class SysTreeNodeController {
-    private static final Logger logger = LoggerFactory.getLogger(SysTreeNodeController.class);
+public class SysNodeController {
+    private static final Logger logger = LoggerFactory.getLogger(SysNodeController.class);
     @Autowired
-    private ISysTreeNodeService treeNodeService;
+    private ISysNodeService treeNodeService;
 
     /**
      * 根据节点查询该节点下所有节点

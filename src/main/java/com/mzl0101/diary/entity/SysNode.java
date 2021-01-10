@@ -1,4 +1,4 @@
-package com.mzl0101.tree.entity;
+package com.mzl0101.diary.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -13,9 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * <p>
- * ???ڵ????ݱ
- * </p>
  *
  * @author mzl
  * @since 2020-06-24
@@ -23,16 +20,14 @@ import java.util.List;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("sys_tree_node")
-public class SysTreeNode implements Serializable {
-
-
+@TableName("sys_node")
+public class SysNode implements Serializable {
     private static final long serialVersionUID = -6697850896827777852L;
     @TableId(value = "node_id", type = IdType.AUTO)
     private Long nodeId;
     private String nodeName;
     private Long nodeParentId;
     @TableField(exist = false)
-    private List<SysTreeNode> nodes = new ArrayList<SysTreeNode>();
+    private List<SysNode> nodes = new ArrayList<SysNode>();
 
 }

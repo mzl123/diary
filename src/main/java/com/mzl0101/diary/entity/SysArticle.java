@@ -15,15 +15,13 @@ import java.util.Date;
 @Accessors(chain = true)
 @TableName("sys_article")
 public class SysArticle implements Serializable {
-
     private static final long serialVersionUID = -3259922056415770657L;
-
     @TableId(value = "article_id", type = IdType.AUTO)
     private Long articleId;
-
     private String articleTitle;
     private Date articleDate;
     private String articleCategories;
     private String articleTags;
     private String articleContent;
+    private Date articleCreateTime;
 }

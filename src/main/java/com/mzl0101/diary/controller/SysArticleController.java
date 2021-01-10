@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
+import java.text.ParseException;
+
 @RestController
 @RequestMapping("/article")
 public class SysArticleController {
@@ -23,8 +26,14 @@ public class SysArticleController {
 
     @ApiOperation(value = "文章发布" ,  notes="文章发布")
     @RequestMapping(value="/deploy",method= RequestMethod.POST)
-    public ResponseEntity deployTreeUserAll() {
+    public ResponseEntity deployAllArticle() throws IOException {
         articleService.deploy();
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+    @ApiOperation(value = "文章同步" ,  notes="文章同步")
+    @RequestMapping(value="/sync",method= RequestMethod.POST)
+    public ResponseEntity syncAllArticle() throws IOException, ParseException {
+        articleService.sync();
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }

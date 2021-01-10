@@ -1,7 +1,7 @@
 #mysql
 spring:
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/diary
+    url: jdbc:mysql://127.0.0.1:3306/diary?useUnicode=true&characterEncoding=utf8
     username: root
     password: dev_123456
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -34,3 +34,9 @@ swagger:
 logging:
   config: classpath:logback-spring.xml
   path: D:/diarylog/
+
+#配置目录
+article:
+  path: E:/dev/blog/source/_posts
+img:
+  path: E:/dev/blog/source/img

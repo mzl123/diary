@@ -1,6 +1,6 @@
 package com.mzl0101.util;
 
-import com.mzl0101.tree.entity.SysTreeNode;
+import com.mzl0101.diary.entity.SysNode;
 
 import java.util.*;
 
@@ -8,8 +8,8 @@ public class TreeNodeUtil {
     private List<Map<Long, Object>> mapList = new ArrayList<>();
 
     //初始化
-    public TreeNodeUtil(List<SysTreeNode> List) {
-        for (SysTreeNode item : List)
+    public TreeNodeUtil(List<SysNode> List) {
+        for (SysNode item : List)
         {
             Map<Long, Object> tempMap = new HashMap<>();
             tempMap.put(item.getNodeId(), item);
@@ -18,28 +18,28 @@ public class TreeNodeUtil {
     }
 
     //根据id获取节点
-    public SysTreeNode getTreePoById(Long parentId) {
-        SysTreeNode treePo = new SysTreeNode();
+    public SysNode getTreePoById(Long parentId) {
+        SysNode treePo = new SysNode();
         for(Map temp :mapList)
         {
             Set<Long> keys = temp.keySet();
             if(keys.toArray()[0].equals(parentId))
             {
-                treePo = (SysTreeNode) temp.get(keys.toArray()[0]);
+                treePo = (SysNode) temp.get(keys.toArray()[0]);
                 break;
             }
         }
         return treePo;
     }
     //获取子节点
-    public List<SysTreeNode> getChildrenPoById(Long parentId) {
-        List<SysTreeNode> childrenTreePo = new ArrayList<SysTreeNode>();
+    public List<SysNode> getChildrenPoById(Long parentId) {
+        List<SysNode> childrenTreePo = new ArrayList<SysNode>();
 
         for(Map temp :mapList)
         {
             Set<Long> keys = temp.keySet();
             Long key = (Long) keys.toArray()[0];
-            SysTreeNode temppo = (SysTreeNode) temp.get(key);
+            SysNode temppo = (SysNode) temp.get(key);
             Long tempParId = temppo.getNodeParentId();
             if(tempParId.equals(parentId))
             {
@@ -50,15 +50,15 @@ public class TreeNodeUtil {
     }
 
     //构造新节点方法
-    public SysTreeNode generateTreePo(Long rootId) {
-        SysTreeNode root = this.getTreePoById(rootId);// 获取父这个节点
-        List<SysTreeNode> childrenTreePo = this.getChildrenPoById(rootId);
+    public SysNode generateTreePo(Long rootId) {
+        SysNode root = this.getTreePoById(rootId);// 获取父这个节点
+        List<SysNode> childrenTreePo = this.getChildrenPoById(rootId);
 
         for (int i=0;i<childrenTreePo.size();i++) {
-            SysTreeNode item = childrenTreePo.get(i);
-            SysTreeNode tp = this.generateTreePo(item.getNodeId());
+            SysNode item = childrenTreePo.get(i);
+            SysNode tp = this.generateTreePo(item.getNodeId());
             if (root.getNodes() == null) {
-                root.setNodes(new ArrayList<SysTreeNode>());
+                root.setNodes(new ArrayList<SysNode>());
             }
             root.getNodes().add(tp);
         }
