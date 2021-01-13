@@ -1,4 +1,4 @@
-package com.mzl0101.util;
+package com.mzl0101.common.util;
 
 import com.mzl0101.diary.entity.SysNode;
 

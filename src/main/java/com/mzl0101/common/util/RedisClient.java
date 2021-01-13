@@ -1,4 +1,4 @@
-package com.mzl0101.util;
+package com.mzl0101.common.util;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;

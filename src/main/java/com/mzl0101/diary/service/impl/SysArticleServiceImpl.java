@@ -1,5 +1,6 @@
 package com.mzl0101.diary.service.impl;
 
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mzl0101.diary.entity.SysArticle;
 import com.mzl0101.diary.entity.SysStorage;
@@ -8,23 +9,77 @@ import com.mzl0101.diary.mapper.SysStorageMapper;
 import com.mzl0101.diary.service.ISysArticleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.Stream;
 
 @Service
-public class SysArticleServiceImpl extends ServiceImpl<SysArticleMapper, SysArticle> implements ISysArticleService {
+public class SysArticleServiceImpl extends ServiceImpl<SysArticleMapper, SysArticle> implements ISysArticleService, InitializingBean {
     private static final Logger logger = LoggerFactory.getLogger(SysArticleServiceImpl.class);
+
+    @Value("${cmd.threadname:cmd-executor}")
+    private String threadName;
+
+    @Value("${cmd.taskQueueMaxStorage:20}")
+    private Integer taskQueueMaxStorage;
+
+    @Value("${cmd.corePoolSize:4}")
+    private Integer corePoolSize;
+
+    @Value("${cmd.maximumPoolSize:8}")
+    private Integer maximumPoolSize;
+
+    @Value("${cmd.keepAliveSeconds:15}")
+    private  Integer  keepAliveSeconds;
+    private ThreadPoolExecutor executor;
+    private static final String  BASH = "sh";
+    private static final String  BASH_PARAM = "-c";
+
+    @Override
+    public void afterPropertiesSet() {
+        executor = new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveSeconds, TimeUnit.SECONDS,
+                new ArrayBlockingQueue<Runnable>(taskQueueMaxStorage),
+                new ThreadFactory() {
+                    public Thread newThread(Runnable r) {
+                        return new Thread(r, threadName + r.hashCode());
+                    }
+                },
+                new ThreadPoolExecutor.AbortPolicy());
+    }
+
+
+    class ReadTask implements Callable<String> {
+        InputStream is;
+
+        ReadTask(InputStream is) {
+            this.is = is;
+        }
+
+        @Override
+        public String call() throws Exception {
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
+            return sb.toString();
+        }
+    }
 
     @Autowired
     private SysArticleMapper sysArticleMapper;
@@ -37,6 +92,7 @@ public class SysArticleServiceImpl extends ServiceImpl<SysArticleMapper, SysArti
     @Value("${img.path}")
     private String imgPath;
     public static SysArticleServiceImpl sysArticleServiceImpl;
+
 
     @PostConstruct
     public void init(){
@@ -76,26 +132,44 @@ public class SysArticleServiceImpl extends ServiceImpl<SysArticleMapper, SysArti
     }
 
     @Override
-    public void deploy() throws IOException {
+    public void deploy(SysArticle sysArticle) throws IOException {
+        System.out.println(sysArticle.toString());
         //1.获取数据
+        sysArticle.setArticleCreateTime(new Date());
         //2.保存数据
+        sysArticleMapper.insert(sysArticle);
         //3.创建markdown文件
-        //4.生成静态部署文件
-    }
-    /**
-     * 递归写法
-     * @param file
-     */
-    private static void func(File file){
-        File[] fs = file.listFiles();
-        for(File f:fs){
-            if(f.isDirectory())	//若是目录，则递归打印该目录下的文件
-                func(f);
-            if(f.isFile())		//若是文件，直接打印
-                System.out.println(f);
-        }
+        createNewMarkdownFile(articlePath, sysArticle);
     }
 
+    @Override
+    public String confirmDeployArticles(){
+        // 生成静态部署文件
+        Process p = null;
+        String res;
+        try {
+            List<String> cmds = new ArrayList<>();
+            cmds.add("ipconfig");
+            ProcessBuilder pb = new ProcessBuilder(cmds);
+            p = pb.start();
+            Future<String> errorFuture = executor.submit(new ReadTask(p.getErrorStream()));
+            Future<String> resFuture = executor.submit(new ReadTask(p.getInputStream()));
+            int exitValue = p.waitFor();
+            if (exitValue > 0) {
+                throw new RuntimeException(errorFuture.get());
+            }
+            res = resFuture.get();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (p != null) {p.destroy();}
+        }
+        if (StringUtils.isNotBlank(res) && res.endsWith(System.lineSeparator())) {
+            res = res.substring(0, res.lastIndexOf(System.lineSeparator()));
+        }
+        return  res;
+    }
     /**
      * 根据文件路径读取文件中的内容并返回结果
      * @param filePath
@@ -164,5 +238,56 @@ public class SysArticleServiceImpl extends ServiceImpl<SysArticleMapper, SysArti
             }
         }
     }
+
+    private static void createNewMarkdownFile(String articlePath, SysArticle sysArticle) throws IOException {
+        String title = sysArticle.getArticleTitle();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String date = simpleDateFormat.format(sysArticle.getArticleDate());
+        String categories = sysArticle.getArticleCategories();
+        String tags = sysArticle.getArticleTags();
+        String content = sysArticle.getArticleContent();
+        String fileName = articlePath + title + ".md";
+        Path path = Paths.get(fileName);
+        // 使用newBufferedWriter创建文件并写文件
+        // try-with-resources方法来关闭流，不用手动关闭
+        try (BufferedWriter writer =
+                     Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
+            writer.write("---");
+            writer.newLine();
+            writer.write("title: "+ title);
+            writer.newLine();
+            writer.write("date: "+ date);
+            writer.newLine();
+            writer.write("tags: "+ tags);
+            writer.newLine();
+            writer.write("categories: "+ categories);
+            writer.newLine();
+            writer.write("---");
+            writer.newLine();
+            writer.write(content);
+        }
+        //追加写模式
+        try (BufferedWriter writer =
+                     Files.newBufferedWriter(path,
+                             StandardCharsets.UTF_8,
+                             StandardOpenOption.APPEND)){
+            writer.newLine();
+        }
+    }
+
+    /**
+     * 递归写法遍历文件夹下所有文件
+     * @param file
+     */
+    private static void readFiles(File file){
+        File[] fs = file.listFiles();
+        for(File f:fs){
+            if(f.isDirectory())	//若是目录，则递归打印该目录下的文件
+                readFiles(f);
+            if(f.isFile())		//若是文件，直接打印
+                System.out.println(f);
+        }
+    }
+
 
 }

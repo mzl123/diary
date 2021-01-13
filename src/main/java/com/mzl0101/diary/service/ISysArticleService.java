@@ -7,7 +7,10 @@ import java.io.IOException;
 
 public interface ISysArticleService extends IService<SysArticle> {
 
-    void deploy() throws IOException;
+    void deploy(SysArticle sysArticle) throws IOException;
 
     void sync() throws IOException;
+
+    String confirmDeployArticles();
+
 }
