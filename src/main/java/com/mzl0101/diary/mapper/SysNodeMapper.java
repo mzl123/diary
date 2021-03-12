@@ -1,7 +1,7 @@
 package com.mzl0101.diary.mapper;
 
-import com.mzl0101.diary.entity.SysNode;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.mzl0101.diary.entity.SysNode;
 
 /**
  * @author mzl

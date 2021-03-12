@@ -1,7 +1,7 @@
 package com.mzl0101.diary.service.impl;
 
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.mzl0101.common.util.StreamGobbler;
 import com.mzl0101.diary.entity.SysArticle;
 import com.mzl0101.diary.entity.SysStorage;
 import com.mzl0101.diary.mapper.SysArticleMapper;
@@ -9,7 +9,6 @@ import com.mzl0101.diary.mapper.SysStorageMapper;
 import com.mzl0101.diary.service.ISysArticleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -24,66 +23,19 @@ import java.nio.file.StandardOpenOption;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
 @Service
-public class SysArticleServiceImpl extends ServiceImpl<SysArticleMapper, SysArticle> implements ISysArticleService, InitializingBean {
+public class SysArticleServiceImpl extends ServiceImpl<SysArticleMapper, SysArticle> implements ISysArticleService {
     private static final Logger logger = LoggerFactory.getLogger(SysArticleServiceImpl.class);
 
-    @Value("${cmd.threadname:cmd-executor}")
-    private String threadName;
-
-    @Value("${cmd.taskQueueMaxStorage:20}")
-    private Integer taskQueueMaxStorage;
-
-    @Value("${cmd.corePoolSize:4}")
-    private Integer corePoolSize;
-
-    @Value("${cmd.maximumPoolSize:8}")
-    private Integer maximumPoolSize;
-
-    @Value("${cmd.keepAliveSeconds:15}")
-    private  Integer  keepAliveSeconds;
-    private ThreadPoolExecutor executor;
-    private static final String  BASH = "sh";
-    private static final String  BASH_PARAM = "-c";
-
-    @Override
-    public void afterPropertiesSet() {
-        executor = new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveSeconds, TimeUnit.SECONDS,
-                new ArrayBlockingQueue<Runnable>(taskQueueMaxStorage),
-                new ThreadFactory() {
-                    public Thread newThread(Runnable r) {
-                        return new Thread(r, threadName + r.hashCode());
-                    }
-                },
-                new ThreadPoolExecutor.AbortPolicy());
-    }
+    boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
 
 
-    class ReadTask implements Callable<String> {
-        InputStream is;
-
-        ReadTask(InputStream is) {
-            this.is = is;
-        }
-
-        @Override
-        public String call() throws Exception {
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = br.readLine()) != null) {
-                sb.append(line);
-            }
-            return sb.toString();
-        }
-    }
-
-    @Autowired
+    @Autowired(required = false)
     private SysArticleMapper sysArticleMapper;
-    @Autowired
+    @Autowired(required = false)
     private SysStorageMapper sysStorageMapper;
     @Autowired
     private SaveSysArticleBatchServiceImpl saveSysArticleBatchService;
@@ -99,6 +51,11 @@ public class SysArticleServiceImpl extends ServiceImpl<SysArticleMapper, SysArti
         sysArticleServiceImpl = this;
         sysArticleServiceImpl.sysStorageMapper = this.sysStorageMapper;
     }
+
+    /**
+     * 文章同步功能实现，将本地计算机指定目录下的文件同步到数据库中
+     * @throws IOException
+     */
     @Override
     public void sync() throws IOException {
         //1.读取文件
@@ -131,6 +88,11 @@ public class SysArticleServiceImpl extends ServiceImpl<SysArticleMapper, SysArti
         readImageFiles(imgFile);
     }
 
+    /**
+     * 获取移动端数据保存到数据库
+     * @param sysArticle
+     * @throws IOException
+     */
     @Override
     public void deploy(SysArticle sysArticle) throws IOException {
         System.out.println(sysArticle.toString());
@@ -142,33 +104,27 @@ public class SysArticleServiceImpl extends ServiceImpl<SysArticleMapper, SysArti
         createNewMarkdownFile(articlePath, sysArticle);
     }
 
+    /**
+     * 进入指定目录 执行 hexo g 命令，生成静态部署文件
+     * @throws IOException
+     * @throws InterruptedException
+     */
     @Override
-    public String confirmDeployArticles(){
+    public void confirmDeployArticles() throws IOException, InterruptedException {
         // 生成静态部署文件
-        Process p = null;
-        String res;
-        try {
-            List<String> cmds = new ArrayList<>();
-            cmds.add("ipconfig");
-            ProcessBuilder pb = new ProcessBuilder(cmds);
-            p = pb.start();
-            Future<String> errorFuture = executor.submit(new ReadTask(p.getErrorStream()));
-            Future<String> resFuture = executor.submit(new ReadTask(p.getInputStream()));
-            int exitValue = p.waitFor();
-            if (exitValue > 0) {
-                throw new RuntimeException(errorFuture.get());
-            }
-            res = resFuture.get();
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        } finally {
-            if (p != null) {p.destroy();}
+        ProcessBuilder builder = new ProcessBuilder();
+        if (isWindows) {
+            builder.command("cmd.exe", "/d", " E:\\dev\\blog dir");
+        } else {
+            builder.command("sh", "-c", "ls");
         }
-        if (StringUtils.isNotBlank(res) && res.endsWith(System.lineSeparator())) {
-            res = res.substring(0, res.lastIndexOf(System.lineSeparator()));
-        }
-        return  res;
+        builder.directory(new File(System.getProperty("user.home")));
+        Process process = builder.start();
+        StreamGobbler streamGobbler =
+                new StreamGobbler(process.getInputStream(), System.out::println);
+        Executors.newSingleThreadExecutor().submit(streamGobbler);
+        int exitCode = process.waitFor();
+        assert exitCode == 0;
     }
     /**
      * 根据文件路径读取文件中的内容并返回结果

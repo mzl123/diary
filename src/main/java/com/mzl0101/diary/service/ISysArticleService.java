@@ -11,6 +11,6 @@ public interface ISysArticleService extends IService<SysArticle> {
 
     void sync() throws IOException;
 
-    String confirmDeployArticles();
+    void confirmDeployArticles() throws IOException, InterruptedException;
 
 }

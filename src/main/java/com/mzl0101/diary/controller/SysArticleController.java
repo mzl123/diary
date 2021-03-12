@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.text.ParseException;
 
 @RestController
-@RequestMapping("/article")
+@RequestMapping("/api/diary/article")
 public class SysArticleController {
     private static final Logger logger = LoggerFactory.getLogger(SysArticleController.class);
 
@@ -40,8 +40,8 @@ public class SysArticleController {
     }
     @ApiOperation(value = "部署全部文章" ,  notes="部署全部文章")
     @RequestMapping(value="/deployArticles",method= RequestMethod.POST)
-    public ResponseEntity confirmDeployArticles() throws IOException {
-        String res = articleService.confirmDeployArticles();
+    public ResponseEntity confirmDeployArticles() throws IOException, InterruptedException {
+        articleService.confirmDeployArticles();
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

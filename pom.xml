@@ -23,7 +23,6 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-
 		<!--mybatis-plus-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -91,6 +90,12 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
 			<optional>true</optional>
+		</dependency>
+		<!--hutool工具类-->
+		<dependency>
+			<groupId>cn.hutool</groupId>
+			<artifactId>hutool-all</artifactId>
+			<version>5.5.9</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -160,14 +165,15 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!--<plugin>
+			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>2.3.4.RELEASE</version>
 				<configuration>
-					没有该项配置，热部署不会起作用
-					<fork>true</fork>
+					<!--没有该项配置，热部署不会起作用-->
+					<fork>true</fork><!---->
 				</configuration>
-			</plugin>-->
+			</plugin>
 		</plugins>
 
 		<resources>
